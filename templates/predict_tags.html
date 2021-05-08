@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% endblock %}
+
+
+{% block body %}
+<div class="container">
+<h1 style="text-align: center; color: #7B68EE;">Предсказание тегов новости</h1>
+    <h2 style="text-align: left; color: #7B68EE;">Введите текст новости:</h2>
+    <form action="/tags" method="POST">
+        <p><textarea style="width: 1200px; height: 500px; font-size: 30px;" name="text_in">{{text_in}}</textarea></p>
+        <input  type="submit" class="btn btn-primary" value="Сгенерировать теги">
+
+    </form>
+
+
+{% if test%}
+
+<h2 style="text-align: left; color: #7B68EE;">Возможные теги:</h2>
+<p><h3>{{text_out}}</h3></p>
+</div>
+
+{% endif %}
+
+
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% endblock %}
+
+
+{% block body %}
+<div class="container">
+<h1 style="text-align: center; color: #FF8243;">Суммаризация текста</h1>
+    <h2 style="text-align: left; color: #FF8243;">Введите текст новости:</h2>
+    <form action="/summarization" method="POST">
+        <p><textarea style="width: 1200px; height: 500px; font-size: 30px;" name="text_in">{{text_in}}</textarea></p>
+
+        <h3 style="text-align: left; color: #FF8243;"> Введите количество предложений в резюме (по умолчанию 2): </h3>
+        <input type="text" name="count" placeholder="Количество предложений" size="30">
+        <input style="text-align: right" type="submit" class="btn btn-warning" value="Сгенерировать резюме">
+
+    </form>
+
+
+{% if test%}
+
+    <h2 style="text-align: left; color: #FF8243;">Резюме новости:</h2>
+    <p><textarea style="width: 1200px; height: 200px; font-size: 30px;" name="text_out">{{text_out}}</textarea></p>
+    <p>
+</div>
+
+{% endif %}
+
+
+{% endblock %}
