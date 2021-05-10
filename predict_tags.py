@@ -11,8 +11,6 @@ stop_words = stopwords.words('russian')
 morph = pymorphy2.MorphAnalyzer()
 
 
-
-
 def text_cleaner(text, lemm=True):
     """
     Преобразование исходного текста
