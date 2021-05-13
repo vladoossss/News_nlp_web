@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
-from predict_tags import inference
-from summary import extract_summary
+from predict_tags import load_all, inference
+from summary import load_word2vec, extract_summary
 
 
 # Создаем объект app класса Flask, который будет обращаться к нашему файлу
@@ -15,20 +15,22 @@ def index():
 
 @app.route('/tags', methods=['POST', 'GET'])
 def predict_tags():
+    models = load_all()
+
     if request.method == 'GET':
         return render_template('predict_tags.html',
                                text_in='',
                                text_out=''
                                )
 
-    else:
+    if request.method == 'POST':
         result = request.form
         text_in = result['text_in']
 
-        result_1 = inference(text_in, 'models/model_rubric.h5',
-                             'models/tokenizer_text.pickle', 'models/binarizer_rubric.pickle')
-        result_2 = inference(text_in, 'models/model_subrubric.h5',
-                             'models/tokenizer_text.pickle', 'models/binarizer_subrubric.pickle')
+        result_1 = inference(text_in, models['model_rub'],
+                             models['tokenizer_text'], models['binarizer_rub'])
+        result_2 = inference(text_in, models['model_subrub'],
+                             models['tokenizer_text'], models['binarizer_subrub'])
         res = '#' + result_1 + ', ' + '#' + result_2
 
         return render_template('predict_tags.html',
@@ -40,6 +42,8 @@ def predict_tags():
 
 @app.route('/summarization', methods=['POST', 'GET'])
 def summary():
+    model_w2v = load_word2vec()
+
     if request.method == 'GET':
         return render_template('summary.html',
                                text_in='',
@@ -53,7 +57,7 @@ def summary():
         text_in = result['text_in']
         count = result['count']
         if not count:
-            text_out = extract_summary(text_in)
+            text_out = extract_summary(text_in, model_w2v)
 
             return render_template('summary.html',
                                    test=True,
@@ -63,7 +67,7 @@ def summary():
 
         else:
             count = int(count)
-            text_out = extract_summary(text_in, count)
+            text_out = extract_summary(text_in, model_w2v, count)
 
             return render_template('summary.html',
                                    test=True,
@@ -75,4 +79,4 @@ def summary():
 
 # Запускаем сервер
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=False, port=1234)
+    app.run(debug=True, use_reloader=False, port=1234) #, host='0.0.0.0')

@@ -1,10 +1,8 @@
 from nltk.corpus import stopwords
 import pymorphy2
 import re
-import nltk
 from keras.models import load_model
 from keras.preprocessing.sequence import pad_sequences
-from keras import optimizers
 import keras.backend as K
 import pickle
 stop_words = stopwords.words('russian')
@@ -45,33 +43,38 @@ def model_loader(model_path):
     dependencies = {
         'get_f1': get_f1
     }
-    model = load_model(model_path, custom_objects=dependencies)
-    model.compile(optimizer=optimizers.Adam(learning_rate=0.001),
-                  loss='categorical_crossentropy',
-                  metrics=[get_f1])
-
+    model = load_model(model_path, custom_objects=dependencies, compile=False)
     return model
 
 
-def inference(text, model_path, tokenizer_path, binarizer_path):
-    text = text_cleaner(text)
+def load_all():
+    # создадим словарь для хранения нужных данных и иницилизируем его главными моделями
+    models = {'model_rub': model_loader('inference_files/model_rubric.h5'),
+              'model_subrub': model_loader('inference_files/model_subrubric.h5')}
 
     # загружаем токенизатор текста новости
-    with open(tokenizer_path, 'rb') as f:
-        tokenizer_text = pickle.load(f)
+    with open('inference_files/tokenizer_text.pickle', 'rb') as f:
+        models['tokenizer_text'] = pickle.load(f)
+
+    # загружаем токенизаторы тегов
+    with open('inference_files/binarizer_rubric.pickle', 'rb') as f:
+        models['binarizer_rub'] = pickle.load(f)
+    # загружаем токенизатор тегов
+    with open('inference_files/binarizer_subrubric.pickle', 'rb') as f:
+        models['binarizer_subrub'] = pickle.load(f)
+
+    return models
+
+
+def inference(text, model, tokenizer_text, binarizer):
+    text = text_cleaner(text)
 
     text = tokenizer_text.texts_to_sequences([text])
     text = pad_sequences(text, 200, padding='post')
 
-    # загружаем модель
-    model = model_loader(model_path)
     pred = model.predict(text)
     pred[pred >= 0.5] = 1
     pred[pred < 0.5] = 0
-
-    # загружаем токенизатор тегов
-    with open(binarizer_path, 'rb') as f:
-        binarizer = pickle.load(f)
 
     pred = binarizer.inverse_transform(pred)
     return ' '.join(pred)

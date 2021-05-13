@@ -3,11 +3,16 @@ import razdel
 import numpy as np
 import networkx as nx
 from sklearn.metrics.pairwise import cosine_similarity
-import gensim
 import pickle
 
 
-def textrank(text):
+def load_word2vec():
+    with open('inference_files/word2vec.pickle', 'rb') as f:
+        model_w2v = pickle.load(f)
+    return model_w2v
+
+
+def textrank(text, model_w2v):
     # разбиваем текст на предложения
     sentences = [sentence.text for sentence in razdel.sentenize(text)]
 
@@ -16,9 +21,6 @@ def textrank(text):
 
     # разбиваем предложения на слова
     sentence_words = [[token.text for token in razdel.tokenize(sentence)] for sentence in clean_sentences]
-
-    with open('models/word2vec.pickle', 'rb') as f:
-        model_w2v = pickle.load(f)
 
     # вычисляем вектора для каждого предложения в тексте
     sentence_vectors = []
@@ -53,7 +55,7 @@ def textrank(text):
 
 
 # выводим самое популярное предложение для заголовка
-def extract_summary(text, n=2):
-    tr = textrank(text)
+def extract_summary(text, model_w2v, n=2):
+    tr = textrank(text, model_w2v)
     top_n = sorted(tr[:n])
     return ' '.join(x[2] for x in top_n)
